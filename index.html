@@ -1,0 +1,1169 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080916">
+  <title>祝 loopy 大王结课快乐</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-top: #080916;
+      --bg-mid: #111225;
+      --bg-low: #201420;
+      --gold: #ffd979;
+      --rose: #ff8da1;
+      --mint: #8cf3d3;
+      --blue: #87b9ff;
+      --ink: #fff8e8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg-top);
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+    }
+
+    body {
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 46%, var(--bg-low) 100%);
+    }
+
+    canvas,
+    .sky-layer,
+    .ribbons {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    canvas {
+      z-index: 1;
+      display: block;
+    }
+
+    .sky-layer {
+      z-index: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(160deg, rgba(255, 217, 121, 0.07) 0%, transparent 22%),
+        linear-gradient(22deg, rgba(140, 243, 211, 0.07) 0%, transparent 28%),
+        linear-gradient(180deg, transparent 0%, rgba(255, 141, 161, 0.10) 100%);
+    }
+
+    .sky-layer::before,
+    .sky-layer::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle, rgba(255, 248, 232, 0.86) 0 1px, transparent 1.6px),
+        radial-gradient(circle, rgba(135, 185, 255, 0.7) 0 1px, transparent 1.5px);
+      background-size: 92px 92px, 137px 137px;
+      background-position: 8px 18px, 41px 56px;
+      opacity: 0.32;
+      animation: driftStars 16s linear infinite;
+    }
+
+    .sky-layer::after {
+      background-size: 173px 173px, 211px 211px;
+      background-position: 63px 23px, 17px 111px;
+      opacity: 0.2;
+      animation-duration: 26s;
+      animation-direction: reverse;
+    }
+
+    .ribbons {
+      z-index: 2;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .ribbon {
+      position: absolute;
+      width: 34vmax;
+      height: 1px;
+      left: -12vmax;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, rgba(255, 217, 121, 0.84), rgba(255, 141, 161, 0.38), transparent);
+      transform: rotate(-22deg);
+      filter: drop-shadow(0 0 18px rgba(255, 217, 121, 0.46));
+      opacity: 0.55;
+      animation: ribbonSweep 8s ease-in-out infinite;
+    }
+
+    .ribbon:nth-child(1) {
+      top: 19%;
+      animation-delay: -1.2s;
+    }
+
+    .ribbon:nth-child(2) {
+      top: 67%;
+      left: 54%;
+      transform: rotate(151deg);
+      background: linear-gradient(90deg, transparent, rgba(140, 243, 211, 0.78), rgba(135, 185, 255, 0.4), transparent);
+      animation-delay: -4.5s;
+    }
+
+    .ribbon:nth-child(3) {
+      top: 84%;
+      left: 12%;
+      width: 24vmax;
+      transform: rotate(-10deg);
+      opacity: 0.4;
+      animation-delay: -6s;
+    }
+
+    main {
+      position: relative;
+      z-index: 3;
+      width: min(88vw, 440px);
+      min-height: 560px;
+      padding: max(28px, env(safe-area-inset-top)) 0 max(30px, env(safe-area-inset-bottom));
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      text-align: center;
+      isolation: isolate;
+    }
+
+    .screen {
+      grid-area: 1 / 1;
+      width: 100%;
+      display: grid;
+      justify-items: center;
+      align-content: center;
+      transition:
+        opacity 620ms ease,
+        transform 620ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        filter 620ms ease;
+    }
+
+    .intro-screen {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+
+    .cake-screen {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(28px) scale(0.96);
+      filter: blur(10px);
+    }
+
+    body.cake-open .intro-screen {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-32px) scale(0.96);
+      filter: blur(10px);
+    }
+
+    body.cake-open .cake-screen {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+
+    body.cake-open .sky-layer {
+      background:
+        linear-gradient(160deg, rgba(255, 217, 121, 0.10) 0%, transparent 28%),
+        linear-gradient(25deg, rgba(140, 243, 211, 0.09) 0%, transparent 30%),
+        linear-gradient(180deg, transparent 0%, rgba(255, 141, 161, 0.20) 100%);
+    }
+
+    .loopy-mascot {
+      position: relative;
+      width: 132px;
+      height: 112px;
+      margin-bottom: 16px;
+      filter:
+        drop-shadow(0 16px 30px rgba(255, 141, 161, 0.22))
+        drop-shadow(0 0 36px rgba(255, 217, 121, 0.15));
+      animation: loopyFloat 4.2s ease-in-out infinite;
+    }
+
+    .loopy-face {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 0;
+      height: 92px;
+      border-radius: 48% 48% 44% 44%;
+      background:
+        radial-gradient(circle at 29% 58%, rgba(255, 120, 150, 0.34) 0 10px, transparent 11px),
+        radial-gradient(circle at 71% 58%, rgba(255, 120, 150, 0.34) 0 10px, transparent 11px),
+        linear-gradient(145deg, #ffd2de 0%, #ff9eb8 58%, #f07a9f 100%);
+      box-shadow:
+        inset 0 -8px 16px rgba(150, 41, 79, 0.18),
+        inset 0 8px 18px rgba(255, 255, 255, 0.24);
+    }
+
+    .loopy-ear {
+      position: absolute;
+      top: 23px;
+      width: 34px;
+      height: 42px;
+      border-radius: 48% 52% 45% 55%;
+      background: linear-gradient(145deg, #ffd0dc, #f485a6);
+      box-shadow: inset 0 -5px 10px rgba(150, 41, 79, 0.12);
+    }
+
+    .loopy-ear::after {
+      content: "";
+      position: absolute;
+      inset: 9px 8px 10px;
+      border-radius: inherit;
+      background: rgba(255, 242, 190, 0.42);
+    }
+
+    .loopy-ear.left {
+      left: 4px;
+      transform: rotate(-18deg);
+    }
+
+    .loopy-ear.right {
+      right: 4px;
+      transform: rotate(18deg);
+    }
+
+    .loopy-crown {
+      position: absolute;
+      z-index: 2;
+      top: -2px;
+      left: 50%;
+      width: 58px;
+      height: 38px;
+      transform: translateX(-50%) rotate(-4deg);
+      background:
+        linear-gradient(135deg, transparent 0 32%, #ffd979 33% 65%, transparent 66%),
+        linear-gradient(45deg, transparent 0 32%, #fff2be 33% 65%, transparent 66%);
+      clip-path: polygon(0 100%, 13% 34%, 31% 82%, 50% 0, 69% 82%, 87% 34%, 100% 100%);
+      filter: drop-shadow(0 5px 8px rgba(255, 217, 121, 0.28));
+    }
+
+    .loopy-eye {
+      position: absolute;
+      z-index: 3;
+      top: 57px;
+      width: 8px;
+      height: 11px;
+      border-radius: 50%;
+      background: #2c1725;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .loopy-eye.left {
+      left: 48px;
+    }
+
+    .loopy-eye.right {
+      right: 48px;
+    }
+
+    .loopy-nose {
+      position: absolute;
+      z-index: 3;
+      top: 69px;
+      left: 50%;
+      width: 14px;
+      height: 9px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: #8b4d50;
+    }
+
+    .loopy-smile {
+      position: absolute;
+      z-index: 3;
+      top: 78px;
+      left: 50%;
+      width: 30px;
+      height: 14px;
+      transform: translateX(-50%);
+      border-bottom: 3px solid rgba(68, 32, 45, 0.72);
+      border-radius: 0 0 999px 999px;
+    }
+
+    .loopy-teeth {
+      position: absolute;
+      z-index: 4;
+      top: 87px;
+      left: 50%;
+      width: 18px;
+      height: 13px;
+      transform: translateX(-50%);
+      border-radius: 0 0 6px 6px;
+      background:
+        linear-gradient(90deg, transparent 47%, rgba(123, 75, 72, 0.28) 48% 52%, transparent 53%),
+        linear-gradient(#fff9eb, #ffe9d8);
+      box-shadow: inset 0 -2px 0 rgba(255, 201, 188, 0.35);
+    }
+
+    .loopy-paw {
+      position: absolute;
+      z-index: 2;
+      width: 22px;
+      height: 18px;
+      border-radius: 48% 52% 44% 56%;
+      background: rgba(255, 183, 201, 0.92);
+      box-shadow: inset 0 -3px 7px rgba(142, 51, 83, 0.12);
+    }
+
+    .loopy-paw::before,
+    .loopy-paw::after {
+      content: "";
+      position: absolute;
+      top: -6px;
+      width: 7px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 211, 222, 0.96);
+    }
+
+    .loopy-paw::before {
+      left: 4px;
+    }
+
+    .loopy-paw::after {
+      right: 4px;
+    }
+
+    .loopy-paw.left {
+      left: 10px;
+      bottom: 12px;
+      transform: rotate(22deg);
+    }
+
+    .loopy-paw.right {
+      right: 10px;
+      bottom: 12px;
+      transform: rotate(-22deg);
+    }
+
+    .badge {
+      min-height: 34px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 18px;
+      border: 1px solid rgba(255, 217, 121, 0.42);
+      border-radius: 999px;
+      color: #ffe6a2;
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: rgba(8, 9, 22, 0.34);
+      box-shadow: 0 0 26px rgba(255, 217, 121, 0.12);
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      margin: 24px 0 0;
+      font-size: 3rem;
+      line-height: 1.12;
+      letter-spacing: 0;
+      font-weight: 900;
+      text-wrap: balance;
+      text-shadow:
+        0 2px 0 rgba(53, 25, 38, 0.5),
+        0 0 24px rgba(255, 217, 121, 0.32),
+        0 0 58px rgba(255, 141, 161, 0.24);
+    }
+
+    h1 span {
+      display: block;
+    }
+
+    .name {
+      color: transparent;
+      background: linear-gradient(90deg, #fff7da, var(--gold), var(--rose), #ffffff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      filter: drop-shadow(0 0 18px rgba(255, 217, 121, 0.24));
+    }
+
+    .wish {
+      margin: 22px 0 0;
+      max-width: 18em;
+      color: rgba(255, 248, 232, 0.84);
+      font-size: 1.04rem;
+      line-height: 1.7;
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.38);
+    }
+
+    .cake-button,
+    .back-button {
+      position: relative;
+      min-height: 58px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 0;
+      border-radius: 999px;
+      color: #3b2030;
+      font: inherit;
+      font-weight: 900;
+      letter-spacing: 0;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      background: linear-gradient(135deg, #fff5c8 0%, #ffd979 48%, #ff9eb8 100%);
+      box-shadow:
+        inset 0 -8px 18px rgba(151, 72, 31, 0.16),
+        0 18px 44px rgba(255, 141, 161, 0.24),
+        0 0 0 8px rgba(255, 217, 121, 0.07);
+      transition:
+        transform 180ms ease,
+        box-shadow 180ms ease,
+        filter 180ms ease;
+    }
+
+    .cake-button {
+      margin-top: 32px;
+      min-width: 154px;
+      padding: 0 24px;
+      font-size: 1.06rem;
+      animation: buttonPulse 2.4s ease-in-out infinite;
+    }
+
+    .cake-button::before {
+      content: "";
+      position: absolute;
+      inset: -10px;
+      border-radius: inherit;
+      border: 1px solid rgba(255, 217, 121, 0.34);
+      opacity: 0.7;
+    }
+
+    .cake-button:active,
+    .back-button:active {
+      transform: translateY(2px) scale(0.98);
+      filter: brightness(1.04);
+    }
+
+    .button-cupcake {
+      position: relative;
+      width: 25px;
+      height: 25px;
+      flex: 0 0 auto;
+    }
+
+    .button-cupcake::before {
+      content: "";
+      position: absolute;
+      left: 3px;
+      right: 3px;
+      top: 3px;
+      height: 11px;
+      border-radius: 999px 999px 8px 8px;
+      background: linear-gradient(135deg, #fff9eb, #ffabc2);
+      box-shadow: 0 -4px 0 -2px #fff2be;
+    }
+
+    .button-cupcake::after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      right: 5px;
+      bottom: 2px;
+      height: 14px;
+      border-radius: 4px 4px 7px 7px;
+      background:
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.36) 0 2px, transparent 2px 5px),
+        linear-gradient(180deg, #ffcb6e, #ff9d7a);
+    }
+
+    .spark-note {
+      position: fixed;
+      z-index: 5;
+      left: 50%;
+      bottom: max(18px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      width: min(76vw, 320px);
+      min-height: 38px;
+      display: grid;
+      place-items: center;
+      color: rgba(255, 248, 232, 0.62);
+      font-size: 0.82rem;
+      pointer-events: none;
+      text-align: center;
+      transition: opacity 360ms ease;
+    }
+
+    body.cake-open .spark-note {
+      opacity: 0;
+    }
+
+    .cake-badge {
+      min-height: 32px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 16px;
+      border: 1px solid rgba(140, 243, 211, 0.36);
+      border-radius: 999px;
+      color: #b8fff0;
+      font-size: 0.85rem;
+      font-weight: 700;
+      background: rgba(8, 9, 22, 0.32);
+      box-shadow: 0 0 28px rgba(140, 243, 211, 0.12);
+      backdrop-filter: blur(10px);
+    }
+
+    .cake-stage {
+      position: relative;
+      width: min(76vw, 290px);
+      height: 218px;
+      margin: 10px 0 18px;
+      display: grid;
+      place-items: end center;
+    }
+
+    .cake-stage .loopy-mascot {
+      position: absolute;
+      top: 0;
+      right: -6px;
+      width: 132px;
+      height: 112px;
+      margin: 0;
+      transform-origin: 50% 80%;
+      animation: loopyPeek 3.4s ease-in-out infinite;
+    }
+
+    .cake {
+      position: relative;
+      width: 214px;
+      height: 152px;
+      margin-bottom: 10px;
+      filter:
+        drop-shadow(0 22px 38px rgba(255, 141, 161, 0.22))
+        drop-shadow(0 0 34px rgba(255, 217, 121, 0.18));
+      animation: cakeEnter 780ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+    }
+
+    .cake-plate {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: 0;
+      height: 25px;
+      border-radius: 50%;
+      background: linear-gradient(90deg, rgba(135, 185, 255, 0.35), #fff8e8 42%, rgba(140, 243, 211, 0.42));
+      box-shadow: inset 0 -6px 10px rgba(53, 25, 38, 0.12);
+    }
+
+    .cake-base {
+      position: absolute;
+      left: 30px;
+      right: 30px;
+      bottom: 18px;
+      height: 78px;
+      border-radius: 14px 14px 18px 18px;
+      background:
+        radial-gradient(circle at 22% 38%, #ff8da1 0 5px, transparent 6px),
+        radial-gradient(circle at 48% 62%, #8cf3d3 0 4px, transparent 5px),
+        radial-gradient(circle at 76% 42%, #ffd979 0 5px, transparent 6px),
+        linear-gradient(180deg, #ffbfd0 0%, #ff92ae 54%, #ee6f9b 100%);
+      box-shadow: inset 0 -12px 18px rgba(118, 38, 80, 0.12);
+    }
+
+    .cake-cream {
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      bottom: 86px;
+      height: 42px;
+      border-radius: 22px 22px 12px 12px;
+      background:
+        radial-gradient(circle at 15% 100%, #fff8e8 0 14px, transparent 15px),
+        radial-gradient(circle at 35% 100%, #fff8e8 0 16px, transparent 17px),
+        radial-gradient(circle at 56% 100%, #fff8e8 0 15px, transparent 16px),
+        radial-gradient(circle at 78% 100%, #fff8e8 0 14px, transparent 15px),
+        linear-gradient(180deg, #fffaf1, #ffe6cf);
+      box-shadow: inset 0 7px 10px rgba(255, 255, 255, 0.44);
+    }
+
+    .cake-candle {
+      position: absolute;
+      left: 50%;
+      bottom: 126px;
+      width: 16px;
+      height: 42px;
+      transform: translateX(-50%);
+      border-radius: 6px;
+      background:
+        repeating-linear-gradient(135deg, #fff8e8 0 8px, #87b9ff 8px 14px);
+      box-shadow: 0 5px 14px rgba(135, 185, 255, 0.22);
+    }
+
+    .cake-flame {
+      position: absolute;
+      left: 50%;
+      bottom: 164px;
+      width: 22px;
+      height: 30px;
+      transform: translateX(-50%) rotate(7deg);
+      border-radius: 50% 50% 50% 8%;
+      background: radial-gradient(circle at 45% 64%, #fff8e8 0 22%, #ffd979 23% 58%, #ff8d5f 59% 100%);
+      box-shadow:
+        0 0 22px rgba(255, 217, 121, 0.8),
+        0 0 48px rgba(255, 141, 161, 0.34);
+      animation: flame 1.05s ease-in-out infinite alternate;
+    }
+
+    .cake-spark {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ffd979;
+      box-shadow: 0 0 14px rgba(255, 217, 121, 0.78);
+      animation: cakeSpark 1.8s ease-in-out infinite;
+    }
+
+    .cake-spark.one {
+      left: 18px;
+      top: 72px;
+    }
+
+    .cake-spark.two {
+      right: 18px;
+      top: 58px;
+      background: #8cf3d3;
+      box-shadow: 0 0 14px rgba(140, 243, 211, 0.74);
+      animation-delay: -0.7s;
+    }
+
+    .cake-spark.three {
+      left: 52px;
+      top: 22px;
+      background: #ff8da1;
+      box-shadow: 0 0 14px rgba(255, 141, 161, 0.76);
+      animation-delay: -1.1s;
+    }
+
+    .cake-screen h2 {
+      margin: 12px 0 0;
+      font-size: 2.35rem;
+      line-height: 1.16;
+      letter-spacing: 0;
+      font-weight: 900;
+      color: transparent;
+      background: linear-gradient(90deg, #fff7da, #ffd979 26%, #ff9eb8 62%, #ffffff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      text-shadow: 0 0 32px rgba(255, 141, 161, 0.20);
+    }
+
+    .cake-copy {
+      margin: 16px 0 0;
+      max-width: 19em;
+      color: rgba(255, 248, 232, 0.82);
+      font-size: 1rem;
+      line-height: 1.7;
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.38);
+    }
+
+    .back-button {
+      margin-top: 22px;
+      min-height: 44px;
+      padding: 0 18px;
+      font-size: 0.92rem;
+      background: linear-gradient(135deg, rgba(255, 248, 232, 0.94), #8cf3d3 48%, #87b9ff 100%);
+      box-shadow:
+        inset 0 -7px 14px rgba(40, 95, 110, 0.16),
+        0 14px 34px rgba(140, 243, 211, 0.16);
+    }
+
+    @media (max-width: 430px) {
+      main {
+        width: 86vw;
+        min-height: 540px;
+      }
+
+      .loopy-mascot {
+        width: 124px;
+        height: 106px;
+      }
+
+      h1 {
+        font-size: 2.82rem;
+      }
+
+      .wish {
+        font-size: 1rem;
+      }
+
+      .cake-button {
+        min-width: 148px;
+      }
+    }
+
+    @media (max-height: 700px) {
+      main {
+        min-height: 480px;
+      }
+
+      h1 {
+        margin-top: 18px;
+        font-size: 2.5rem;
+      }
+
+      .wish {
+        margin-top: 16px;
+      }
+
+      .loopy-mascot {
+        width: 112px;
+        height: 96px;
+        margin-bottom: 10px;
+      }
+
+      .cake-button {
+        margin-top: 22px;
+        min-height: 52px;
+      }
+
+      .cake-stage {
+        height: 184px;
+        margin-bottom: 10px;
+      }
+
+      .cake {
+        width: 188px;
+        height: 134px;
+      }
+
+      .cake-screen h2 {
+        font-size: 2rem;
+      }
+
+      .cake-copy {
+        margin-top: 12px;
+        font-size: 0.94rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ribbon,
+      .cake-button,
+      .cake,
+      .cake-flame,
+      .cake-spark,
+      .loopy-mascot,
+      .sky-layer::before,
+      .sky-layer::after {
+        animation: none;
+      }
+    }
+
+    @keyframes driftStars {
+      from {
+        transform: translateY(0);
+      }
+      to {
+        transform: translateY(92px);
+      }
+    }
+
+    @keyframes ribbonSweep {
+      0%,
+      100% {
+        opacity: 0.16;
+        translate: -8px 0;
+      }
+      48% {
+        opacity: 0.62;
+        translate: 18px 9px;
+      }
+    }
+
+    @keyframes buttonPulse {
+      0%,
+      100% {
+        box-shadow:
+          inset 0 -8px 18px rgba(151, 72, 31, 0.16),
+          0 18px 44px rgba(255, 141, 161, 0.24),
+          0 0 0 8px rgba(255, 217, 121, 0.07);
+      }
+      50% {
+        box-shadow:
+          inset 0 -8px 18px rgba(151, 72, 31, 0.16),
+          0 22px 58px rgba(255, 141, 161, 0.32),
+          0 0 0 13px rgba(255, 217, 121, 0.04);
+      }
+    }
+
+    @keyframes loopyFloat {
+      0%,
+      100% {
+        transform: translateY(0) rotate(-1deg);
+      }
+      50% {
+        transform: translateY(-8px) rotate(1.5deg);
+      }
+    }
+
+    @keyframes loopyPeek {
+      0%,
+      100% {
+        transform: translateY(0) rotate(-4deg) scale(0.72);
+      }
+      50% {
+        transform: translateY(-6px) rotate(4deg) scale(0.72);
+      }
+    }
+
+    @keyframes cakeEnter {
+      from {
+        opacity: 0;
+        transform: translateY(32px) scale(0.86);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes flame {
+      from {
+        transform: translateX(-50%) rotate(-5deg) scale(0.94);
+      }
+      to {
+        transform: translateX(-50%) rotate(8deg) scale(1.07);
+      }
+    }
+
+    @keyframes cakeSpark {
+      0%,
+      100% {
+        opacity: 0.24;
+        transform: translateY(0) scale(0.72);
+      }
+      50% {
+        opacity: 1;
+        transform: translateY(-12px) scale(1);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sky-layer" aria-hidden="true"></div>
+  <canvas id="fireworks" aria-hidden="true"></canvas>
+  <div class="ribbons" aria-hidden="true">
+    <i class="ribbon"></i>
+    <i class="ribbon"></i>
+    <i class="ribbon"></i>
+  </div>
+
+  <main aria-label="祝 loopy 大王结课快乐">
+    <section class="screen intro-screen" aria-label="结课祝福">
+      <div class="loopy-mascot" aria-label="loopy 风格小头像">
+        <i class="loopy-crown" aria-hidden="true"></i>
+        <i class="loopy-ear left" aria-hidden="true"></i>
+        <i class="loopy-ear right" aria-hidden="true"></i>
+        <i class="loopy-face" aria-hidden="true"></i>
+        <i class="loopy-eye left" aria-hidden="true"></i>
+        <i class="loopy-eye right" aria-hidden="true"></i>
+        <i class="loopy-nose" aria-hidden="true"></i>
+        <i class="loopy-smile" aria-hidden="true"></i>
+        <i class="loopy-teeth" aria-hidden="true"></i>
+        <i class="loopy-paw left" aria-hidden="true"></i>
+        <i class="loopy-paw right" aria-hidden="true"></i>
+      </div>
+      <div class="badge">Course Complete</div>
+      <h1>
+        <span>祝 <span class="name">loopy 大王</span></span>
+        <span>结课快乐</span>
+      </h1>
+      <p class="wish">愿今天的烟花，替你把这一程的努力都照亮。下一站也要漂亮登场。</p>
+      <button class="cake-button" id="cakeButton" type="button" aria-label="点击按钮进入小蛋糕页面">
+        <span class="button-cupcake" aria-hidden="true"></span>
+        点击按钮
+      </button>
+    </section>
+
+    <section class="screen cake-screen" aria-label="请 loopy 大王吃小蛋糕">
+      <div class="cake-badge">Sweet Reward</div>
+      <div class="cake-stage" aria-hidden="true">
+        <div class="loopy-mascot">
+          <i class="loopy-crown"></i>
+          <i class="loopy-ear left"></i>
+          <i class="loopy-ear right"></i>
+          <i class="loopy-face"></i>
+          <i class="loopy-eye left"></i>
+          <i class="loopy-eye right"></i>
+          <i class="loopy-nose"></i>
+          <i class="loopy-smile"></i>
+          <i class="loopy-teeth"></i>
+          <i class="loopy-paw left"></i>
+          <i class="loopy-paw right"></i>
+        </div>
+        <div class="cake">
+          <i class="cake-spark one"></i>
+          <i class="cake-spark two"></i>
+          <i class="cake-spark three"></i>
+          <i class="cake-flame"></i>
+          <i class="cake-candle"></i>
+          <i class="cake-cream"></i>
+          <i class="cake-base"></i>
+          <i class="cake-plate"></i>
+        </div>
+      </div>
+      <h2>请 loopy 大王<br>吃小蛋糕！</h2>
+      <p class="cake-copy">结课快乐，今天的小蛋糕和烟花都归大王所有。</p>
+      <button class="back-button" id="backButton" type="button">再看一次烟花</button>
+    </section>
+  </main>
+  <div class="spark-note">点击按钮，领取小蛋糕</div>
+
+  <script>
+    (() => {
+      const canvas = document.querySelector("#fireworks");
+      const ctx = canvas.getContext("2d");
+      const cakeButton = document.querySelector("#cakeButton");
+      const backButton = document.querySelector("#backButton");
+      const colors = ["#ffd979", "#ff8da1", "#8cf3d3", "#87b9ff", "#fff8e8", "#f7a7ff"];
+      const fireworks = [];
+      const particles = [];
+      const pointerBursts = [];
+      let cakeMode = false;
+      let width = 0;
+      let height = 0;
+      let dpr = 1;
+      let lastLaunch = 0;
+      let launchGap = 620;
+
+      const rand = (min, max) => Math.random() * (max - min) + min;
+      const pick = (list) => list[Math.floor(Math.random() * list.length)];
+
+      function resize() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function launch(targetX, targetY, fromTouch = false) {
+        const startX = fromTouch ? targetX + rand(-24, 24) : rand(width * 0.18, width * 0.82);
+        const startY = height + 18;
+        fireworks.push({
+          x: startX,
+          y: startY,
+          tx: targetX,
+          ty: targetY,
+          vx: (targetX - startX) / rand(48, 64),
+          vy: (targetY - startY) / rand(48, 64),
+          life: 0,
+          maxLife: rand(44, 62),
+          color: pick(colors),
+          trail: []
+        });
+      }
+
+      function burst(x, y, color, power = 1) {
+        const count = Math.floor(rand(44, 72) * power);
+        for (let i = 0; i < count; i += 1) {
+          const angle = (Math.PI * 2 * i) / count + rand(-0.08, 0.08);
+          const speed = rand(1.2, 5.6) * power;
+          particles.push({
+            x,
+            y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: rand(46, 82),
+            maxLife: rand(76, 110),
+            size: rand(1.2, 2.8),
+            color: Math.random() > 0.22 ? color : pick(colors),
+            gravity: rand(0.018, 0.045),
+            drag: rand(0.965, 0.985)
+          });
+        }
+
+        for (let i = 0; i < 10; i += 1) {
+          particles.push({
+            x,
+            y,
+            vx: rand(-1.4, 1.4),
+            vy: rand(-1.2, 1.8),
+            life: rand(24, 46),
+            maxLife: 54,
+            size: rand(1, 1.8),
+            color: "#fff8e8",
+            gravity: 0.01,
+            drag: 0.98
+          });
+        }
+      }
+
+      function drawGlow(x, y, radius, color, alpha) {
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+        gradient.addColorStop(0, color);
+        gradient.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+
+      function updateFireworks() {
+        for (let i = fireworks.length - 1; i >= 0; i -= 1) {
+          const f = fireworks[i];
+          f.trail.push({ x: f.x, y: f.y });
+          if (f.trail.length > 9) f.trail.shift();
+          f.x += f.vx;
+          f.y += f.vy;
+          f.vy += 0.014;
+          f.life += 1;
+
+          ctx.strokeStyle = f.color;
+          ctx.lineWidth = 2;
+          ctx.globalAlpha = 0.72;
+          ctx.beginPath();
+          for (let j = 0; j < f.trail.length; j += 1) {
+            const p = f.trail[j];
+            if (j === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+          }
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+          drawGlow(f.x, f.y, 18, f.color, 0.18);
+
+          const nearTarget = Math.hypot(f.x - f.tx, f.y - f.ty) < 20;
+          if (nearTarget || f.life > f.maxLife) {
+            burst(f.x, f.y, f.color, rand(0.86, 1.12));
+            fireworks.splice(i, 1);
+          }
+        }
+      }
+
+      function updateParticles() {
+        ctx.globalCompositeOperation = "lighter";
+        for (let i = particles.length - 1; i >= 0; i -= 1) {
+          const p = particles[i];
+          const alpha = Math.max(p.life / p.maxLife, 0);
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vx *= p.drag;
+          p.vy = p.vy * p.drag + p.gravity;
+          p.life -= 1;
+
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * Math.max(alpha, 0.24), 0, Math.PI * 2);
+          ctx.fill();
+
+          if (alpha > 0.28) {
+            drawGlow(p.x, p.y, p.size * 7, p.color, alpha * 0.08);
+          }
+
+          if (p.life <= 0 || p.y > height + 40) particles.splice(i, 1);
+        }
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = "source-over";
+      }
+
+      function sprinkle() {
+        if (particles.length > 260) return;
+        const x = rand(24, width - 24);
+        particles.push({
+          x,
+          y: rand(-16, height * 0.45),
+          vx: rand(-0.16, 0.16),
+          vy: rand(0.18, 0.52),
+          life: rand(80, 150),
+          maxLife: 150,
+          size: rand(0.7, 1.5),
+          color: pick(colors),
+          gravity: 0.002,
+          drag: 0.996
+        });
+      }
+
+      function loop(now) {
+        ctx.clearRect(0, 0, width, height);
+        ctx.globalCompositeOperation = "source-over";
+
+        if (now - lastLaunch > launchGap) {
+          const topEdge = cakeMode ? height * 0.12 : height * 0.14;
+          const bottomEdge = cakeMode ? height * 0.36 : height * 0.45;
+          launch(rand(width * 0.16, width * 0.84), rand(topEdge, bottomEdge));
+          lastLaunch = now;
+          launchGap = cakeMode ? rand(430, 760) : rand(520, 980);
+        }
+
+        if (Math.random() > 0.78) sprinkle();
+        while (pointerBursts.length) {
+          const point = pointerBursts.shift();
+          for (let i = 0; i < 3; i += 1) {
+            launch(point.x + rand(-36, 36), point.y + rand(-28, 28), true);
+          }
+          burst(point.x, point.y, pick(colors), 0.58);
+        }
+
+        updateFireworks();
+        updateParticles();
+        requestAnimationFrame(loop);
+      }
+
+      function queuePointerBurst(event) {
+        pointerBursts.push({ x: event.clientX, y: event.clientY });
+      }
+
+      function openCakePage(event) {
+        queuePointerBurst(event);
+        cakeMode = true;
+        document.body.classList.add("cake-open");
+        history.replaceState(null, "", "#cake");
+        setTimeout(() => {
+          pointerBursts.push({ x: width * 0.5, y: height * 0.34 });
+          pointerBursts.push({ x: width * 0.3, y: height * 0.25 });
+          pointerBursts.push({ x: width * 0.7, y: height * 0.26 });
+        }, 260);
+      }
+
+      function closeCakePage(event) {
+        queuePointerBurst(event);
+        cakeMode = false;
+        document.body.classList.remove("cake-open");
+        history.replaceState(null, "", location.pathname);
+      }
+
+      window.addEventListener("resize", resize, { passive: true });
+      cakeButton.addEventListener("pointerdown", openCakePage);
+      backButton.addEventListener("pointerdown", closeCakePage);
+      resize();
+      if (location.hash === "#cake") {
+        cakeMode = true;
+        document.body.classList.add("cake-open");
+      }
+      setTimeout(() => {
+        launch(width * 0.5, height * 0.24);
+        launch(width * 0.28, height * 0.34);
+        launch(width * 0.72, height * 0.32);
+      }, 240);
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>
